@@ -19,6 +19,7 @@ db_is_new = not os.path.exists(db_filename)
 
 conn = sqlite3.connect(db_filename)
 
+#table uusgeh function
 def create_table(create_table_sql):
     """ create a table from the create_table_sql statement
     :param conn: Connection object
@@ -30,6 +31,7 @@ def create_table(create_table_sql):
     except Error as e:
         print(e)
 
+#herev baaz uuseegui bwal uusgene table uusgene
 if db_is_new is True:
     table1 = """ create table zip_location (
                                         id           integer not null,
@@ -92,12 +94,15 @@ headers = {
     'Accept-Language': 'en',
 }
 
+#turluud
 categoryMap = {1: 'Улс', 2: 'Хот', 4: 'Аймаг', 5: 'Дүүрэг', 6: 'сум', 8: 'баг', 9: 'Хороо'}
 
+#api duudah
 def callData(url):
     response = requests.get(url, headers=headers, cookies=cookies, verify=False, timeout=10)
     return json.loads(response.text)
 
+#coordinate hadgalah
 def saveCoordinate(coordinates):
     for coordinate in coordinates:
         id = coordinate['id']
@@ -116,6 +121,7 @@ def saveCoordinate(coordinates):
         VALUES(?, ?, ?, ?, ?);
         """, insertData)
 
+#relation hadgalah
 def saveRelation(relations):
     relations = relations[0]
 
@@ -138,6 +144,7 @@ def saveRelation(relations):
 
     saveCoordinate(relations['coordinates'])
 
+#location hadgalah
 def saveData(data):
     id = data['id']
     parent_id = data['parent_id']
@@ -166,6 +173,7 @@ def saveData(data):
     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);
     """, insertData)
 
+#recursive ajilladag function
 def callRec(parentId):
     url = 'http://zipcode.mn/map/getpolydatawithchildren/' + str(parentId)
     data = callData(url)
