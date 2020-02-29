@@ -123,26 +123,29 @@ def saveCoordinate(coordinates):
 
 #relation hadgalah
 def saveRelation(relations):
-    relations = relations[0]
+    try:
+        relations = relations[0]
 
-    id = relations['id']
-    relation_code = relations['relation_code']
-    zipcode = relations['zipcode']
-    beg_point = relations['beg_point']
-    end_point = relations['end_point']
+        id = relations['id']
+        relation_code = relations['relation_code']
+        zipcode = relations['zipcode']
+        beg_point = relations['beg_point']
+        end_point = relations['end_point']
 
-    insertData = [
+        insertData = [
+            (id, relation_code, zipcode, beg_point, end_point)
+        ]
+
+        conn.executemany("""
+        INSERT INTO zip_relation
         (id, relation_code, zipcode, beg_point, end_point)
-    ]
+        VALUES(?, ?, ?, ?, ?);
 
-    conn.executemany("""
-    INSERT INTO zip_relation
-    (id, relation_code, zipcode, beg_point, end_point)
-    VALUES(?, ?, ?, ?, ?);
+        """, insertData)
 
-    """, insertData)
-
-    saveCoordinate(relations['coordinates'])
+        saveCoordinate(relations['coordinates'])
+    except IndexError as e:
+        print('no relations')
 
 #location hadgalah
 def saveData(data):
@@ -159,7 +162,7 @@ def saveData(data):
     try: 
         category_type_name = categoryMap[category_type_code]
     except KeyError as e:
-        print('not exis category type:', category_type_code)
+        print('not exist category type:', category_type_code)
         
 
     saveRelation(data['relations'])
@@ -177,24 +180,27 @@ def saveData(data):
 def callRec(parentId):
     url = 'http://zipcode.mn/map/getpolydatawithchildren/' + str(parentId)
     data = callData(url)
-    parentData = data['data'][0]
+    try:
+        parentData = data['data'][0]
 
-    saveData(parentData)
+        saveData(parentData)
 
-    tmpData = data['children']
+        tmpData = data['children']
 
-    if not tmpData:
-        i = 1
-    else: 
-        for sData in tmpData:
-            childId = sData['id']
+        if not tmpData:
+            i = 1
+        else: 
+            for sData in tmpData:
+                childId = sData['id']
 
-            print(sData['location_name_mn'])
-            
-            conn.commit()
-            time.sleep(sleepTime)
+                print(sData['location_name_mn'])
+                
+                conn.commit()
+                time.sleep(sleepTime)
 
-            callRec(childId)
+                callRec(childId)
+    except IndexError as e:
+        print('no parent data')
 
 # aimag hot
 aimagData = callData('http://zipcode.mn/map/getanposition')
